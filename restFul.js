@@ -141,4 +141,8 @@
             return JSON.stringify(jsonRes);
         }
     });
+
+    exports.help = function () {
+      console.log('help message');
+    };
 })(jQuery, window, document);
