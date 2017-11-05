@@ -1,6 +1,6 @@
 {
   "name": "surenpi",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "restful ajax",
   "main": "restFul.js",
   "scripts": {
@@ -19,7 +19,8 @@
   ],
   "author": "suren <zxjlwt@126.com> (http://surenpi.com)",
   "license": "MIT",
-  "bugs": {   "url": "https://github.com/LinuxSuRen/SuRenFront/issues"
+  "bugs": {
+    "url": "https://github.com/LinuxSuRen/SuRenFront/issues"
   },
   "homepage": "https://github.com/LinuxSuRen/SuRenFront#readme"
 }
