@@ -10,6 +10,8 @@
  * 本插件依赖jQuery
  * @author suren <http://surenpi.com>
  */
+var jQuery = require('jquery');
+
 (function ($) {
     var ajaxGlobalConf = {
         dataType: 'json',
