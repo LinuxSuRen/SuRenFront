@@ -1,6 +1,6 @@
 {
   "name": "suren-restful",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "restful ajax",
   "main": "restFul.js",
   "scripts": {
