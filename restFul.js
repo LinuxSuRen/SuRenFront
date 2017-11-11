@@ -145,7 +145,9 @@
         }
     });
 
-    exports.help = function () {
-      console.log('help message');
-    };
+    if(exports) {
+        exports.help = function () {
+            console.log('help message');
+        };
+    }
 })(jQuery, window, document);
