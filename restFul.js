@@ -145,7 +145,7 @@
         }
     });
 
-    if(exports) {
+    if(typeof exports !== 'undefined') {
         exports.help = function () {
             console.log('help message');
         };
