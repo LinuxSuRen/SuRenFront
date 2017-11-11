@@ -10,144 +10,147 @@
  * 本插件依赖jQuery
  * @author suren <http://surenpi.com>
  */
+if(typeof define === 'function' && define.amd) {
+    define('suren-restful', ['jquery'], function (jQuery) {
+        (function ($) {
+            "use strict";
 
-(function ($) {
-    "use strict";
+            var ajaxGlobalConf = {
+                dataType: 'json',
+                contentType: 'application/json'
+            };
 
-    var ajaxGlobalConf = {
-        dataType: 'json',
-        contentType: 'application/json'
-    };
+            var debugConf = {
+                storageKey: 'suren.debug',
+                debugData: '/debugData',
+                dataSuffix: '.json',
+                apiPrefix: '/api'
+            };
 
-    var debugConf = {
-        storageKey: 'suren.debug',
-        debugData: '/debugData',
-        dataSuffix: '.json',
-        apiPrefix: '/api'
-    };
+            /**
+             * 判断是否为向后台请求的地址
+             * @param url
+             * @returns {boolean}
+             */
+            function isServiceUrl(url) {
+                return (!url.endsWith('.html') &&
+                    !url.endsWith('.js') &&
+                    !url.endsWith('.css') &&
+                    !url.endsWith('.json'));
+            }
 
-    /**
-     * 判断是否为向后台请求的地址
-     * @param url
-     * @returns {boolean}
-     */
-    function isServiceUrl(url) {
-        return (!url.endsWith('.html') &&
-            !url.endsWith('.js') &&
-            !url.endsWith('.css') &&
-            !url.endsWith('.json'));
-    }
-
-    /**
-     * 判断是否为debug模式
-     * @returns {boolean} 如果是debug模式返回true，否则false
-     */
-    function isDebugMode() {
-        var sessionDebug = sessionStorage.getItem(debugConf.storageKey);
-        var localDebug = localStorage.getItem(debugConf.storageKey);
-        if(sessionDebug == 'demo' || localDebug == 'demo') {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    $.extend({
-        suAjax: function (userConfig) {
-            var config = $.extend(false, ajaxGlobalConf, userConfig);
-            if(config) {
-                if('form' in config && config.form != '') {
-                    var formSelector = config.form;
-                    var data = $(formSelector).serializeJson();
-                    config.data = data;
+            /**
+             * 判断是否为debug模式
+             * @returns {boolean} 如果是debug模式返回true，否则false
+             */
+            function isDebugMode() {
+                var sessionDebug = sessionStorage.getItem(debugConf.storageKey);
+                var localDebug = localStorage.getItem(debugConf.storageKey);
+                if(sessionDebug == 'demo' || localDebug == 'demo') {
+                    return true;
+                } else {
+                    return false;
                 }
             }
 
-            var suAjax = {
-                prepareRequest: function(request, type) {
-                    if(type == 'GET') {
-                        config.type = 'GET';
-                    } else if(type == 'POST') {
-                        config.type = 'POST';
-                    } else if(type == 'DELETE') {
-                        config.type = 'DELETE';
-                    } else if(type == 'PUT') {
-                        config.type = 'PUT';
-                    }
-
-                    request = $.extend(false, config, request);
-                    if(isServiceUrl(request.url) && !request.url.startsWith(debugConf.apiPrefix) &&
-                        !request.url.startsWith(debugConf.debugData)) {
-                        var urlItems = request.url.split('/');
-                        if(isDebugMode()) {
-                            if(urlItems[0].startsWith('http')) {
-                                urlItems[2] = urlItems[2] + debugConf.debugData;
-
-                                request.url = urlItems.join('/');
-                            } else if(request.url.startsWith('/') && isServiceUrl(request.url)) {
-                                request.url = (debugConf.debugData + request.url);
-                            }
-
-                            request.url = request.url + debugConf.dataSuffix;
-                        } else {
-                            if(urlItems[0].startsWith('http')) {
-                                urlItems[2] = urlItems[2] + debugConf.apiPrefix;
-
-                                request.url = urlItems.join('/');
-                            } else if(request.url.startsWith('/') && isServiceUrl(request.url)) {
-                                request.url = (debugConf.apiPrefix + request.url);
-                            }
+            $.extend({
+                suAjax: function (userConfig) {
+                    var config = $.extend(false, ajaxGlobalConf, userConfig);
+                    if(config) {
+                        if('form' in config && config.form != '') {
+                            var formSelector = config.form;
+                            var data = $(formSelector).serializeJson();
+                            config.data = data;
                         }
                     }
 
-                    return request;
-                },
-                ajax: function (request) {
-                    return $.ajax(this.prepareRequest(request, ''));
-                },
-                save: function (request) {
-                    this.ajax(this.prepareRequest(request, 'POST'));
-                },
-                del: function (request) {
-                    this.ajax(this.prepareRequest(request, 'DELETE'));
-                },
-                update: function (request) {
-                    this.ajax(this.prepareRequest(request, 'PUT'));
-                },
-                query: function (request) {
-                    this.ajax(this.prepareRequest(request, 'GET'));
-                },
-                upload: function (request) {
-                    this.save($.extend(false, {
-                        processData: false,
-                        contentType: false
-                    }, request));
+                    var suAjax = {
+                        prepareRequest: function(request, type) {
+                            if(type == 'GET') {
+                                config.type = 'GET';
+                            } else if(type == 'POST') {
+                                config.type = 'POST';
+                            } else if(type == 'DELETE') {
+                                config.type = 'DELETE';
+                            } else if(type == 'PUT') {
+                                config.type = 'PUT';
+                            }
+
+                            request = $.extend(false, config, request);
+                            if(isServiceUrl(request.url) && !request.url.startsWith(debugConf.apiPrefix) &&
+                                !request.url.startsWith(debugConf.debugData)) {
+                                var urlItems = request.url.split('/');
+                                if(isDebugMode()) {
+                                    if(urlItems[0].startsWith('http')) {
+                                        urlItems[2] = urlItems[2] + debugConf.debugData;
+
+                                        request.url = urlItems.join('/');
+                                    } else if(request.url.startsWith('/') && isServiceUrl(request.url)) {
+                                        request.url = (debugConf.debugData + request.url);
+                                    }
+
+                                    request.url = request.url + debugConf.dataSuffix;
+                                } else {
+                                    if(urlItems[0].startsWith('http')) {
+                                        urlItems[2] = urlItems[2] + debugConf.apiPrefix;
+
+                                        request.url = urlItems.join('/');
+                                    } else if(request.url.startsWith('/') && isServiceUrl(request.url)) {
+                                        request.url = (debugConf.apiPrefix + request.url);
+                                    }
+                                }
+                            }
+
+                            return request;
+                        },
+                        ajax: function (request) {
+                            return $.ajax(this.prepareRequest(request, ''));
+                        },
+                        save: function (request) {
+                            this.ajax(this.prepareRequest(request, 'POST'));
+                        },
+                        del: function (request) {
+                            this.ajax(this.prepareRequest(request, 'DELETE'));
+                        },
+                        update: function (request) {
+                            this.ajax(this.prepareRequest(request, 'PUT'));
+                        },
+                        query: function (request) {
+                            this.ajax(this.prepareRequest(request, 'GET'));
+                        },
+                        upload: function (request) {
+                            this.save($.extend(false, {
+                                processData: false,
+                                contentType: false
+                            }, request));
+                        }
+                    };
+
+                    return suAjax;
                 }
-            };
+            });
 
-            return suAjax;
-        }
-    });
+            $.fn.extend({
+                serializeJson: function () {
+                    var container = this;
+                    var arrayData = container.serializeArray();
+                    var len = arrayData.length;
+                    var jsonRes = {};
 
-    $.fn.extend({
-        serializeJson: function () {
-            var container = this;
-            var arrayData = container.serializeArray();
-            var len = arrayData.length;
-            var jsonRes = {};
+                    for(var i = 0; i < len; i++) {
+                        var arrayItem = arrayData[i];
+                        jsonRes[arrayItem.name] = arrayItem.value;
+                    }
 
-            for(var i = 0; i < len; i++) {
-                var arrayItem = arrayData[i];
-                jsonRes[arrayItem.name] = arrayItem.value;
+                    return JSON.stringify(jsonRes);
+                }
+            });
+
+            if(typeof exports !== 'undefined') {
+                exports.help = function () {
+                    console.log('help message');
+                };
             }
-
-            return JSON.stringify(jsonRes);
-        }
+        })(jQuery);
     });
-
-    if(typeof exports !== 'undefined') {
-        exports.help = function () {
-            console.log('help message');
-        };
-    }
-})(jQuery, window, document);
+}
