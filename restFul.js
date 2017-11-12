@@ -152,5 +152,11 @@ if(typeof define === 'function' && define.amd) {
                 };
             }
         })(jQuery);
+
+        return {
+            help: function () {
+                console.log('hello from http://surenpi.com');
+            }
+        };
     });
 }
