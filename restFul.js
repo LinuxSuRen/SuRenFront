@@ -156,6 +156,9 @@ if(typeof define === 'function' && define.amd) {
         return {
             help: function () {
                 console.log('hello from http://surenpi.com');
+            },
+            deps: function () {
+                return ['jquery'];
             }
         };
     });
