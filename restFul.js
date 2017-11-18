@@ -40,13 +40,53 @@ if(typeof define === 'function' && define.amd) {
             }
 
             /**
+             * token处理
+             */
+            function tokenHandle(request) {
+                var token = getAccessToken();
+                request.headers = {
+                    Authorization: 'Bearer' + token
+                };
+
+                request.complete = function (e, xhr, opts) {
+                    ajaxComplete(e, xhr, opts);
+                };
+            }
+
+            /**
+             * 全局的ajax请求完成处理函数
+             * @param e
+             * @param xhr
+             * @param opts
+             */
+            function ajaxComplete(e, xhr, opts) {
+                if(e.status === 401) {
+                    gotoLoginPage();
+                }
+            }
+
+            /**
+             * 跳转到登录页面
+             */
+            function gotoLoginPage() {
+                window.location = '/login.html';
+            }
+
+            /**
+             * 获取accessToken
+             */
+            function getAccessToken() {
+                return sessionStorage.getItem('access_token');
+            }
+
+            /**
              * 判断是否为debug模式
              * @returns {boolean} 如果是debug模式返回true，否则false
              */
             function isDebugMode() {
                 var sessionDebug = sessionStorage.getItem(debugConf.storageKey);
                 var localDebug = localStorage.getItem(debugConf.storageKey);
-                if(sessionDebug == 'demo' || localDebug == 'demo') {
+                if(sessionDebug === 'demo' || localDebug === 'demo') {
                     return true;
                 } else {
                     return false;
@@ -54,13 +94,50 @@ if(typeof define === 'function' && define.amd) {
             }
 
             $.extend({
+                unserialize: function (str) {
+                    var result = {};
+                    if(typeof str === 'string') {
+                        var items = str.split('&');
+                        for(var i = 0; i < items.length; i++) {
+                            var map = items[i].split('=');
+                            if(map.length !== 2) {
+                                continue;
+                            }
+
+                            result[map[0]] = map[1];
+                        }
+                    }
+
+                    return result;
+                },
                 suAjax: function (userConfig) {
                     var config = $.extend(false, ajaxGlobalConf, userConfig);
                     if(config) {
-                        if('form' in config && config.form != '') {
+                        if('form' in config && config.form !== '') {
                             var formSelector = config.form;
                             var data = $(formSelector).serializeJson();
-                            config.data = data;
+                            var usrDataType = (typeof config.data);
+
+                            var jsonObj = null;
+                            if(usrDataType === 'object') {
+                                jsonObj = $.extend(false, JSON.parse(data), config.data);
+                            } else if(usrDataType === 'string') {
+                                try{
+                                    jsonObj = $.extend(false, JSON.parse(data), JSON.parse(config.data));
+                                } catch (e) {
+                                    if(config.data.indexOf('=') !== -1) {
+                                        jsonObj = $.extend(false, JSON.parse(data), $.unserialize(config.data));
+                                    } else {
+                                        console.log(e);
+                                    }
+                                }
+                            } else {
+                                config.data = data;
+                            }
+
+                            if(jsonObj !== null) {
+                                config.data = JSON.stringify(jsonObj);
+                            }
                         }
                     }
 
@@ -100,6 +177,8 @@ if(typeof define === 'function' && define.amd) {
                                     }
                                 }
                             }
+
+                            tokenHandle(request);
 
                             return request;
                         },
@@ -143,6 +222,16 @@ if(typeof define === 'function' && define.amd) {
                     }
 
                     return JSON.stringify(jsonRes);
+                },
+                fillForm: function (data) {
+                    if(typeof data !== 'object' || $.isArray(data)) {
+                        return;
+                    }
+
+                    var form = $(this);
+                    for(var i in data) {
+                        form.find(':input[name=' + i + ']').val(data[i]);
+                    }
                 }
             });
 
