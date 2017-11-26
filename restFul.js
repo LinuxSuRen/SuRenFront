@@ -223,13 +223,20 @@ if(typeof define === 'function' && define.amd) {
 
                     return JSON.stringify(jsonRes);
                 },
-                fillForm: function (data) {
+                fillForm: function (data, exclude) {
                     if(typeof data !== 'object' || $.isArray(data)) {
                         return;
                     }
 
+                    if(!$.isArray(exclude)) {
+                        exclude = [];
+                    }
+
                     var form = $(this);
                     for(var i in data) {
+                        if($.inArray(i, exclude) !== -1) {
+                            continue;
+                        }
                         form.find(':input[name=' + i + ']').val(data[i]);
                     }
                 }
