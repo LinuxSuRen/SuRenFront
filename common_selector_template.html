@@ -1,0 +1,5 @@
+<%if((typeof selected) === 'undefined'){selected='-1';}%>
+<option value="-1">请选择</option>
+<%for(var i = 0; i < data.length; i++){%>
+<option value="<%=data[i].value%>" <%if(data[i].value === selected)%>selected<%%>><%=data[i].text%></option>
+<%}%>
