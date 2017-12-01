@@ -61,7 +61,7 @@ function selector(config) {
             });
         }
     });
-};
+}
 
 /**
  * 同时渲染多个下拉框
