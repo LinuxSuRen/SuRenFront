@@ -62,3 +62,20 @@ function selector(config) {
         }
     });
 };
+
+/**
+ * 同时渲染多个下拉框
+ */
+function selectors(common, selectors) {
+    if(!$.isArray(selectors)){
+        throw 'The second argument must be array type!';
+    }
+
+    var len = selectors.length;
+    for(var i = 0; i < len; i++) {
+        var selector = selectors[i];
+        var config = $.extend(false, common, selector);
+
+        devops.selector(config);
+    }
+}
