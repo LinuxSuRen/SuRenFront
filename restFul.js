@@ -17,7 +17,13 @@ if(typeof define === 'function' && define.amd) {
 
             var ajaxGlobalConf = {
                 dataType: 'json',
-                contentType: 'application/json'
+                contentType: 'application/json',
+                options: {
+                    triggerTimeout: 600
+                },
+                error: function (xhr, ts) {
+                    ajaxComplete(xhr, ts, this.options);
+                }
             };
 
             var debugConf = {
@@ -48,20 +54,33 @@ if(typeof define === 'function' && define.amd) {
                     Authorization: 'Bearer' + token
                 };
 
-                request.complete = function (e, xhr, opts) {
-                    ajaxComplete(e, xhr, opts);
+                request.complete = function (xhr, ts, opts) {
+                    ajaxComplete(xhr, ts, opts);
                 };
             }
 
             /**
              * 全局的ajax请求完成处理函数
-             * @param e
              * @param xhr
+             * @param ts
              * @param opts
              */
-            function ajaxComplete(e, xhr, opts) {
-                if(e.status === 401) {
+            function ajaxComplete(xhr, ts, opts) {
+                if(xhr.status === 401) {
                     gotoLoginPage();
+                }
+
+                if(opts && opts.hasOwnProperty('trigger')) {
+                    var timeout;
+                    if(opts.hasOwnProperty('triggerTimeout') && $.isNumeric(opts.triggerTimeout)) {
+                        timeout = opts.triggerTimeout >= globalConfig.options.triggerTimeout ? opts.triggerTimeout : globalConfig.options.triggerTimeout;
+                    } else {
+                        timeout = globalConfig.options.triggerTimeout;
+                    }
+
+                    window.setTimeout(function () {
+                        enableEle(opts.trigger);
+                    }, timeout);
                 }
             }
 
@@ -70,6 +89,55 @@ if(typeof define === 'function' && define.amd) {
              */
             function gotoLoginPage() {
                 window.location = '/login.html';
+            }
+
+            /**
+             * 禁用元素
+             * @param selector
+             */
+            function disableEle(selector) {
+                if(selector === undefined || selector === '') {
+                    return;
+                }
+
+                var ele = $(selector);
+                if(ele.length === 0) {
+                    return;
+                }
+
+                if(ele.is('a')) {
+                    ele.attr('data-href', ele.attr('href')).removeAttr('href');
+                } else if(ele.is('input')) {
+                    ele.attr('disabled', true);
+                } else {
+                    ele.css('pointer-events', 'none');
+                }
+            }
+
+            /**
+             * 启用元素
+             * @param selector
+             */
+            function enableEle(selector) {
+                if(selector === undefined || selector === '') {
+                    return;
+                }
+
+                var ele = $(selector);
+                if(ele.length === 0) {
+                    return;
+                }
+
+                if(ele.is('a')) {
+                    var originHref = ele.attr('data-href');
+                    if(originHref !== '') {
+                        ele.attr('href', originHref);
+                    }
+                } else if(ele.is('input')) {
+                    ele.removeAttr('disabled');
+                } else {
+                    ele.css('pointer-events', '');
+                }
             }
 
             /**
@@ -178,11 +246,14 @@ if(typeof define === 'function' && define.amd) {
                                 }
                             }
 
+                            request.options.trigger = this.trigger;
+
                             tokenHandle(request);
 
                             return request;
                         },
                         ajax: function (request) {
+                            disableEle(this.trigger);
                             return $.ajax(this.prepareRequest(request, ''));
                         },
                         save: function (request) {
@@ -204,6 +275,8 @@ if(typeof define === 'function' && define.amd) {
                             }, request));
                         }
                     };
+
+                    devopsAjax.trigger = config.trigger;
 
                     return suAjax;
                 }
